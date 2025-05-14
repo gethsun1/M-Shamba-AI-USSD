@@ -1,0 +1,7 @@
+Django>=4.2,<5
+djangorestframework>=3.14
+django-cors-headers>=4.0
+python-dotenv>=1.0
+africastalking>=1.0,<2.0 
+redis>=4.5        # if you plan to use Redis for session cache
+django-redis>=5.2 # if you configure SESSION_ENGINE to use Redis
