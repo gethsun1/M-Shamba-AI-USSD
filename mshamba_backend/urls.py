@@ -15,10 +15,12 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include
+from ussd.views import ussd_callback  
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('ussd.urls')),
-
+    # Direct callback endpoint for USSD gateway
+    path('ussd_callback/', ussd_callback, name='ussd_callback'),
 ]
