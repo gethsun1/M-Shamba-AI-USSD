@@ -12,18 +12,17 @@ export default function App() {
 
   const SERVICE_CODE = import.meta.env.VITE_USSD_SERVICE_CODE;
   const PHONE_NUMBER = import.meta.env.VITE_USSD_PHONE_NUMBER;
+  // Default to Django's development server URL if VITE_USSD_API_URL is not set
+  const API_BASE_URL = import.meta.env.VITE_USSD_API_URL || 'http://localhost:8000';
 
   const sendUssdInput = async (text: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      
-      const rawBase = import.meta.env.VITE_USSD_API_URL || '';
-      const sanitizedBase = rawBase.replace(/\\x3a/g, ':');
-
-      
-      const endpoint = new URL('/ussd_callback/', sanitizedBase).href;
+      // Ensure base URL is properly formatted
+      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
+      const endpoint = `${baseUrl}ussd_callback/`;
       console.log('✨ Fetching USSD at:', endpoint);
 
       const body = new URLSearchParams({
@@ -45,7 +44,7 @@ export default function App() {
 
     } catch (err: any) {
       console.error('USSD fetch error:', err);
-      setError('Network or server error.');
+      setError(`Network or server error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
