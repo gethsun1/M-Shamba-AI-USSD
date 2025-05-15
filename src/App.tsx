@@ -18,12 +18,15 @@ export default function App() {
     setError(null);
 
     try {
-      
-      const rawBase = import.meta.env.VITE_USSD_API_URL || '';
+      // Get base URL with fallback to current origin
+      const rawBase = import.meta.env.VITE_USSD_API_URL || window.location.origin;
       const sanitizedBase = rawBase.replace(/\\x3a/g, ':');
-
       
-      const endpoint = new URL('/ussd_callback/', sanitizedBase).href;
+      // Ensure base URL has protocol
+      const baseUrl = sanitizedBase.startsWith('http') ? sanitizedBase : `http://${sanitizedBase}`;
+      
+      // Construct full URL
+      const endpoint = new URL('/ussd_callback/', baseUrl).href;
       console.log('✨ Fetching USSD at:', endpoint);
 
       const body = new URLSearchParams({
