@@ -1,9 +1,20 @@
+// src/index.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';      
+import { MantineProvider } from '@mantine/core';
+import App from './App';
 import './index.css';
-import { MantineProvider } from "@mantine/core";
-import "@mantine/core/styles.css";
-import React from "react";
-import { render } from "react-dom";
-import { App } from "./App";
-render(<MantineProvider>
-    <App />
-  </MantineProvider>, document.getElementById("root"));
+
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Root container missing in index.html');
+}
+
+const root = ReactDOM.createRoot(container);
+root.render(
+  <React.StrictMode>
+    <MantineProvider>
+      <App />
+    </MantineProvider>
+  </React.StrictMode>
+);
