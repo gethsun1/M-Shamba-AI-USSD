@@ -6,3 +6,9 @@ africastalking>=1.2.5
 redis>=4.5.4
 django-redis>=5.2.0
 web3>=6.0.0
+django-cors-headers>=4.0
+python-dotenv>=1.0
+africastalking>=1.0,<2.0
+redis>=4.5
+django-redis>=5.2
+
