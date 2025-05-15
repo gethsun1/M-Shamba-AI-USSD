@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import USSDMenu from './components/USSDMenu';
+import WalletButton from './components/WalletButton';
 
 const generateSessionId = () => Math.random().toString(36).substr(2, 9);
 
@@ -9,10 +11,10 @@ export default function App() {
   const [menuResponse, setMenuResponse] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { isConnected } = useAccount();
 
   const SERVICE_CODE = import.meta.env.VITE_USSD_SERVICE_CODE;
   const PHONE_NUMBER = import.meta.env.VITE_USSD_PHONE_NUMBER;
-  // Default to Django's development server URL if VITE_USSD_API_URL is not set
   const API_BASE_URL = import.meta.env.VITE_USSD_API_URL || 'http://localhost:8000';
 
   const sendUssdInput = async (text: string) => {
@@ -20,7 +22,6 @@ export default function App() {
     setError(null);
 
     try {
-      // Ensure base URL is properly formatted
       const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
       const endpoint = `${baseUrl}ussd_callback/`;
       console.log('✨ Fetching USSD at:', endpoint);
@@ -30,6 +31,7 @@ export default function App() {
         serviceCode: SERVICE_CODE,
         phoneNumber: PHONE_NUMBER,
         text,
+        hasWallet: isConnected ? 'true' : 'false'
       });
 
       const res = await fetch(endpoint, {
@@ -50,7 +52,6 @@ export default function App() {
     }
   };
 
-  // Kick off session
   useEffect(() => {
     sendUssdInput('');
   }, []);
@@ -62,8 +63,12 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-xs bg-white border-2 border-green-600 rounded-2xl shadow-lg p-6">
+    <div className="min-h-screen flex flex-col bg-gray-100 p-4">
+      <div className="w-full max-w-xs mx-auto mb-4">
+        <WalletButton />
+      </div>
+      
+      <div className="w-full max-w-xs mx-auto bg-white border-2 border-green-600 rounded-2xl shadow-lg p-6">
         <header className="text-center mb-6">
           <div className="text-sm text-gray-500">USSD: {SERVICE_CODE}</div>
           <h1 className="text-2xl font-bold text-green-700">M‑SHAMBA AI</h1>
