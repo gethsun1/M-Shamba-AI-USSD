@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import USSDMenu from './components/USSDMenu';
 
@@ -12,17 +13,18 @@ export default function App() {
 
   const SERVICE_CODE = import.meta.env.VITE_USSD_SERVICE_CODE;
   const PHONE_NUMBER = import.meta.env.VITE_USSD_PHONE_NUMBER;
-  // Default to Django's development server URL if VITE_USSD_API_URL is not set
-  const API_BASE_URL = import.meta.env.VITE_USSD_API_URL || 'http://localhost:8000';
+  const API_BASE_RAW = import.meta.env.VITE_USSD_API_URL;
 
   const sendUssdInput = async (text: string) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // Ensure base URL is properly formatted
-      const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`;
-      const endpoint = `${baseUrl}ussd_callback/`;
+      // Sanitize raw base URL in case of escaped characters
+      const raw = API_BASE_RAW || 'http://localhost:8000';
+      const sanitizedBase = raw.replace(/\\x3a/g, ':').replace(/\/+$/g, '');
+      // Build endpoint using URL constructor
+      const endpoint = new URL('/ussd_callback/', sanitizedBase).href;
       console.log('✨ Fetching USSD at:', endpoint);
 
       const body = new URLSearchParams({
@@ -44,7 +46,7 @@ export default function App() {
 
     } catch (err: any) {
       console.error('USSD fetch error:', err);
-      setError(`Network or server error: ${err.message}`);
+      setError(`Network error: ${err.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -53,12 +55,19 @@ export default function App() {
   // Kick off session
   useEffect(() => {
     sendUssdInput('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = (value: string) => {
     const newText = inputHistory ? `${inputHistory}*${value}` : value;
     setInputHistory(newText);
     sendUssdInput(newText);
+  };
+
+  // Handler to restart the USSD session
+  const handleRestart = () => {
+    setInputHistory('');
+    sendUssdInput('');
   };
 
   return (
@@ -74,6 +83,7 @@ export default function App() {
           onSelect={handleSubmit}
           loading={isLoading}
           error={error}
+          onRestart={handleRestart}
         />
       </div>
     </div>
