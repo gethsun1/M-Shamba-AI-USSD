@@ -1,9 +1,23 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';      
+import { MantineProvider } from '@mantine/core';
+import { WagmiConfig } from 'wagmi';
+import { config } from './lib/web3Config';
+import App from './App';
 import './index.css';
-import { MantineProvider } from "@mantine/core";
-import "@mantine/core/styles.css";
-import React from "react";
-import { render } from "react-dom";
-import { App } from "./App";
-render(<MantineProvider>
-    <App />
-  </MantineProvider>, document.getElementById("root"));
+
+const container = document.getElementById('root');
+if (!container) {
+  throw new Error('Root container missing in index.html');
+}
+
+const root = ReactDOM.createRoot(container);
+root.render(
+  <React.StrictMode>
+    <WagmiConfig config={config}>
+      <MantineProvider>
+        <App />
+      </MantineProvider>
+    </WagmiConfig>
+  </React.StrictMode>
+);
