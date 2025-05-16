@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npx vite",
-    "build": "npx vite build",
+     "dev": "vite",
+     "build": "vite build",
+     "vercel-build": "vite build",
+     "start": "vite preview",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "preview": "npx vite preview"
   },
