@@ -5,12 +5,12 @@ type USSDMenuProps = {
   loading: boolean;
   error: string | null;
   onSelect: (value: string) => void;
+  onRestart: () => void; // New prop for restart functionality
 };
 
-export default function USSDMenu({ response, loading, error, onSelect }: USSDMenuProps) {
+export default function USSDMenu({ response, loading, error, onSelect, onRestart }: USSDMenuProps) {
   const [choice, setChoice] = useState<string>('');
 
-  
   const lines = response.split('\n');
   const isEnd = lines[lines.length - 1].startsWith('END');
 
@@ -38,16 +38,26 @@ export default function USSDMenu({ response, loading, error, onSelect }: USSDMen
             type="text"
             value={choice}
             onChange={e => setChoice(e.target.value)}
-            placeholder="Chagua chaguo..."
+            placeholder="Select Option..."
             className="w-full p-2 border border-gray-300 rounded-md mb-2 focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <button
             type="submit"
             className="w-full bg-green-600 text-white p-2 rounded-md hover:bg-green-700"
           >
-            Tuma
+            Send
           </button>
         </form>
+      )}
+      
+      {/* Add restart button when the flow ends */}
+      {!loading && isEnd && (
+        <button
+          onClick={onRestart}
+          className="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 mt-4"
+        >
+          Start New Session
+        </button>
       )}
     </div>
   );

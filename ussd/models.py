@@ -4,13 +4,19 @@ from django.utils import timezone
 class Crop(models.Model):
     """Model for crop types available for trading"""
     name = models.CharField(max_length=100)
-    name_sw = models.CharField(max_length=100, verbose_name="Swahili Name")
     code = models.CharField(max_length=10, unique=True)
     current_price = models.DecimalField(max_digits=10, decimal_places=2)
+    usdc_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=6,
+        default=0,
+        help_text="Current price in USDC per kg"
+    )
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.code})"
+
 
 class User(models.Model):
     """Model for user accounts"""
@@ -24,6 +30,7 @@ class User(models.Model):
 
     def __str__(self):
         return self.phone_number
+
 
 class Transaction(models.Model):
     """Model for tracking crop sales and purchases"""
@@ -45,6 +52,12 @@ class Transaction(models.Model):
     total_amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    tx_hash = models.CharField(
+        max_length=66,
+        blank=True,
+        null=True,
+        help_text="On-chain transaction hash for USDC payment"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
