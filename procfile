@@ -1,0 +1,1 @@
+web: gunicorn mshamba_backend.wsgi --log-level info

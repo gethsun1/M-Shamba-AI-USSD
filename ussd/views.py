@@ -19,9 +19,9 @@ ESCROW_CONTRACT_ADDRESS = os.getenv('ESCROW_CONTRACT_ADDRESS')
 
 # Mock products for demo purposes
 MOCK_PRODUCTS = {
-    '1': {'name': 'Mahindi', 'price': 100, 'usdc_price': 0.7},
-    '2': {'name': 'Mihogo', 'price': 150, 'usdc_price': 1.05},
-    '3': {'name': 'Nyanya', 'price': 200, 'usdc_price': 1.4},
+    '1': {'name': 'Maize', 'price': 100, 'usdc_price': 0.7},
+    '2': {'name': 'Cassava', 'price': 150, 'usdc_price': 1.05},
+    '3': {'name': 'Tomato', 'price': 200, 'usdc_price': 1.4},
 }
 
 def handle_blockchain_payment(phone_number: str, amount_usdc: Decimal, product_data: dict) -> bool:
@@ -49,16 +49,15 @@ def ussd_callback(request):
         # Input validation
         if not all([session_id, phone]):
             logger.error(f"Invalid request parameters: {payload}")
-            return HttpResponse("END Invalid request parameters", content_type="text/plain")
+            return HttpResponse("END Invalid request parameters.", content_type="text/plain")
 
         inputs = text.split('*') if text else []
         state = session_manager.get_session(session_id)
         level = state['level']
         data = state.get('data', {})
-
         response = ''
 
-        # Enhanced error recovery
+        # Retry limit
         if state.get('retries', 0) >= 3:
             session_manager.clear_session(session_id)
             return HttpResponse("END Session expired. Please try again.", content_type="text/plain")
@@ -66,11 +65,11 @@ def ussd_callback(request):
         # Main menu
         if level == 0:
             response = (
-                "CON Karibu M‑Shamba AI\n"
-                "1. Uza Mazao\n"
-                "2. Angalia Bei\n"
-                "3. Akaunti\n"
-                "4. Msaada"
+                "CON Welcome to M‑Shamba AI\n"
+                "1. Sell Produce\n"
+                "2. View Prices\n"
+                "3. Account Balance\n"
+                "4. Help"
             )
             state['level'] = 1
 
@@ -78,25 +77,25 @@ def ussd_callback(request):
         elif level == 1:
             choice = inputs[0] if inputs else ''
             if choice == '1':
-                response = "CON Chagua zao:\n"
+                response = "CON Choose a product:\n"
                 for key, prod in MOCK_PRODUCTS.items():
                     response += f"{key}. {prod['name']} (USDC {prod['usdc_price']})\n"
                 state['level'] = 2
             elif choice == '2':
-                response = "CON Bei za soko leo:\n"
+                response = "CON Today's market prices:\n"
                 for prod in MOCK_PRODUCTS.values():
                     response += f"{prod['name']}: USDC {prod['usdc_price']}\n"
                 response += "\nEND"
                 state['level'] = 0
             elif choice == '3':
-                # Fetch wallet balance from Base
-                response = "END Akaunti yako ina USDC 10.00"
+                # Fetch wallet balance from Base (mock)
+                response = "END Your account balance is USDC 10.00"
                 state['level'] = 0
             elif choice == '4':
-                response = "END Msaada: Piga 0800-xxx za msaada."
+                response = "END Help: Call 0800-xxx for support."
                 state['level'] = 0
             else:
-                response = "END Chaguo batili."
+                response = "END Invalid option."
                 state['level'] = 0
 
         # Product selection
@@ -105,12 +104,12 @@ def ussd_callback(request):
             product = MOCK_PRODUCTS.get(prod_choice)
             if product:
                 data['product'] = product
-                response = f"CON Uingize wingi (kg) ya {product['name']}:"
+                response = f"CON Enter quantity (kg) for {product['name']}:"
                 state['level'] = 3
                 state['data'] = data
             else:
                 session_manager.increment_retry(session_id)
-                response = "END Chaguo batili."
+                response = "END Invalid product choice."
                 state['level'] = 0
 
         # Quantity input
@@ -120,10 +119,10 @@ def ussd_callback(request):
                 product = data.get('product')
                 amount_usdc = Decimal(str(float(quantity) * product['usdc_price']))
                 response = (
-                    f"CON Umekamua kuuza {quantity}kg ya {product['name']}\n"
-                    f"Bei jumla: USDC {amount_usdc:.2f}\n"
-                    "1. Thibitisha na USDC\n"
-                    "2. Rudia"
+                    f"CON You are about to sell {quantity}kg of {product['name']}\n"
+                    f"Total price: USDC {amount_usdc:.2f}\n"
+                    "1. Confirm payment\n"
+                    "2. Cancel"
                 )
                 data['quantity'] = quantity
                 data['amount_usdc'] = str(amount_usdc)
@@ -131,7 +130,7 @@ def ussd_callback(request):
                 state['data'] = data
             else:
                 session_manager.increment_retry(session_id)
-                response = "END Tafadhali ingiza nambari halali (1-1000 kg)."
+                response = "END Please enter a valid number (1-1000 kg)."
                 state['level'] = 0
 
         # Payment confirmation
@@ -141,19 +140,18 @@ def ussd_callback(request):
                 amount_usdc = Decimal(data['amount_usdc'])
                 if handle_blockchain_payment(phone, amount_usdc, data):
                     response = (
-                        f"END Asante! Ombi lako la kuuza {data['quantity']}kg ya {data['product']['name']}\n"
-                        f"kwa USDC {amount_usdc:.2f} limepokelewa.\n"
-                        "Utapokea ujumbe wa kuthibitisha."
+                        f"END Thank you! Your request to sell {data['quantity']}kg of {data['product']['name']} "
+                        f"for USDC {amount_usdc:.2f} has been received. You will receive a confirmation soon."
                     )
                 else:
-                    response = "END Samahani, kuna shida ya kiufundi. Tafadhali jaribu tena."
+                    response = "END Sorry, technical issue. Please try again."
             else:
-                response = "END Umegoma ombi."
+                response = "END Your request has been cancelled."
             state['level'] = 0
             state['data'] = {}
 
         else:
-            response = "END Umefanya kosa."
+            response = "END An error occurred."
             state['level'] = 0
             state['data'] = {}
 
@@ -163,4 +161,4 @@ def ussd_callback(request):
 
     except Exception as e:
         logger.error(f"USSD handler error: {e}")
-        return HttpResponse("END Samahani, kuna shida ya kiufundi.", content_type="text/plain")
+        return HttpResponse("END Sorry, technical error.", content_type="text/plain")
