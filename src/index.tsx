@@ -1,8 +1,7 @@
+
 import React from 'react';
-import ReactDOM from 'react-dom/client';      
+import ReactDOM from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
-import { WagmiConfig } from 'wagmi';
-import { config } from './lib/web3Config';
 import App from './App';
 import './index.css';
 
@@ -14,10 +13,8 @@ if (!container) {
 const root = ReactDOM.createRoot(container);
 root.render(
   <React.StrictMode>
-    <WagmiConfig config={config}>
-      <MantineProvider>
-        <App />
-      </MantineProvider>
-    </WagmiConfig>
+    <MantineProvider withNormalizeCSS withGlobalStyles>
+      <App />
+    </MantineProvider>
   </React.StrictMode>
 );
