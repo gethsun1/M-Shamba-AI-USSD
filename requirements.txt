@@ -10,7 +10,7 @@ certifi==2025.4.26
 charset-normalizer==3.4.2
 ckzg==2.1.1
 cytoolz==1.0.1
-Django==4.2.21
+Django==4.2.26
 django-cors-headers==4.7.0
 django-redis==5.4.0
 djangorestframework==3.16.0
