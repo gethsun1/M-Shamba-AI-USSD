@@ -43,7 +43,7 @@ regex==2024.11.6
 requests==2.32.3
 rlp==4.1.0
 schema==0.7.7
-sqlparse==0.5.3
+sqlparse==0.5.4
 toolz==1.0.0
 types-requests==2.32.0.20250515
 typing-inspection==0.4.0
